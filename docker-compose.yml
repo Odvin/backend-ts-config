@@ -1,0 +1,75 @@
+version: '3.5'
+
+services:
+  postgres-db:
+    container_name: postgre_db
+    image: 'postgres:12'
+    ports:
+      - ${POSTGRES_EXTERNAL_PORT}:${POSTGRES_PORT}
+    restart: unless-stopped
+    expose:
+      - ${POSTGRES_EXTERNAL_PORT}
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
+      POSTGRES_DB: ${POSTGRES_DB:-ongradient}
+    volumes:
+      - ongradient-data:/var/lib/postgresql/data
+    networks:
+      - ongradient
+
+  pg-admin:
+    container_name: pg_admin
+    image: dpage/pgadmin4
+    ports:
+      - ${PGADMIN_EXTERNAL_PORT}:${PGADMIN_PORT}
+    restart: unless-stopped
+    expose:
+      - ${PGADMIN_EXTERNAL_PORT}
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-secret}
+    volumes:
+      - pgadmin:/root/.pgadmin
+    depends_on:
+      - postgres-db
+    networks:
+      - ongradient
+
+  api-server:
+    container_name: ongradient_api
+    image: node:12
+    working_dir: /usr/src/api-server
+    environment:
+      SERVICE_NAME: ${SERVICE_NAME}
+      CORS_URL: ${CORS_URL}
+      API_SERVER_PORT: ${API_SERVER_PORT}
+      ROUTER_LOG_ACTIVATION: ${ROUTER_LOG_ACTIVATION}
+      ROUTER_LOG_FORMAT: ${ROUTER_LOG_FORMAT}
+      CONSOLE_LOG_FORMAT: ${CONSOLE_LOG_FORMAT}
+      CONSOLE_LOG_LEVEL: ${CONSOLE_LOG_LEVEL}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_SYNC: ${POSTGRES_SYNC}
+    ports:
+      - ${API_EXTERNAL_SERVER_PORT}:${API_SERVER_PORT}
+    expose:
+      - ${API_EXTERNAL_SERVER_PORT}
+    volumes:
+      - ./:/usr/src/api-server
+    depends_on:
+      - postgres-db
+    networks:
+      - ongradient
+    command: npm run start:dev
+
+volumes:
+  ongradient-data:
+  pgadmin:
+
+networks:
+  ongradient:
+    name: ongradient-dev-network
