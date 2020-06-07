@@ -2,6 +2,7 @@ import { port, serviceName } from './config';
 import app from './app';
 import logger from './logger';
 import './databases';
+import './storage/mongo';
 
 app
   .listen(port, () =>

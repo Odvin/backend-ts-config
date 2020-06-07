@@ -21,3 +21,31 @@ export const postgresConfig = {
   database: process.env.POSTGRES_DB || 'ongradient',
   synchronize: Boolean(process.env.POSTGRES_SYNC)
 };
+
+// ---------
+
+export const environment = process.env.NODE_ENV || 'development';
+
+export const serviceName = process.env.SERVICE_NAME || 'Ongradient-API-Server';
+
+export const port = parseInt(process.env.PORT || '4000');
+
+export const corsUrl = process.env.CORS_URL || '*';
+
+export const routerLog = {
+  active: Boolean(process.env.ROUTER_LOG_ACTIVATION || false),
+  format: process.env.ROUTER_LOG_FORMAT || 'tiny'
+};
+
+export const consoleLog = {
+  format: process.env.CONSOLE_LOG_FORMAT || 'plain',
+  level: process.env.CONSOLE_LOG_LEVEL || 'error'
+};
+
+export const mongoDbInfo = {
+  database: process.env.DB_NAME || 'ongradient',
+  host: process.env.MONGO_HOST || 'ongradient-mongo-db',
+  port: process.env.MONGO_PORT || '27017',
+  user: process.env.DB_USER || 'teacher',
+  password: process.env.DB_USER_PWD || 'teacherPassword'
+};

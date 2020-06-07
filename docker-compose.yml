@@ -1,6 +1,25 @@
 version: '3.5'
 
 services:
+  ongradient-mongo-db:
+    container_name: ongradient-mongo-db
+    image: mongo:4
+    restart: always
+    expose:
+      - ${MONGO_PORT}
+    ports:
+      - ${MONGO_EXTERNAL_PORT}:${MONGO_PORT}
+    env_file: .env
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=$MONGO_DB_ADMIN
+      - MONGO_INITDB_ROOT_PASSWORD=$MONGO_DB_ADMIN_PWD
+      - MONGO_INITDB_DATABASE=$DB_NAME
+    volumes:
+      - ongradient-data:/var/lib/mongo/data
+    networks:
+      - ongradient
+    restart: always
+
   postgres-db:
     container_name: postgre_db
     image: 'postgres:12'
@@ -40,6 +59,7 @@ services:
     container_name: ongradient_api
     image: node:12
     working_dir: /usr/src/api-server
+    env_file: .env
     environment:
       SERVICE_NAME: ${SERVICE_NAME}
       CORS_URL: ${CORS_URL}
@@ -55,13 +75,14 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_SYNC: ${POSTGRES_SYNC}
     ports:
-      - ${API_EXTERNAL_SERVER_PORT}:${API_SERVER_PORT}
+      - $API_EXTERNAL_PORT:$API_PORT
     expose:
-      - ${API_EXTERNAL_SERVER_PORT}
+      - $API_EXTERNAL_PORT
     volumes:
       - ./:/usr/src/api-server
     depends_on:
       - postgres-db
+      - ongradient-mongo-db
     networks:
       - ongradient
     command: npm run start:dev

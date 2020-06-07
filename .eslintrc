@@ -6,6 +6,7 @@
   },
   "plugins": ["@typescript-eslint/eslint-plugin", "prettier"],
   "extends": [
+    "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
     "prettier",
@@ -17,10 +18,8 @@
     "jest": true
   },
   "rules": {
-    "@typescript-eslint/interface-name-prefix": "off",
-    "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/no-explicit-any": "off",
-    "no-console": 1, // Means warning
-    "prettier/prettier": 2 // Means error
+    // 2 - error, 1 - warn, 0 - off
+    "no-console": 1,
+    "prettier/prettier": 2
   }
 }
