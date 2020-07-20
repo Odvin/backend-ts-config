@@ -1,0 +1,319 @@
+openapi: 3.0.0
+info:
+  title: Slots Office API
+  description: Configuration and management API for the Slots Game Platform
+  version: 1.0.0
+servers:
+  - url: http://localhost:4000/api/v1
+    description: Slots Office API Server (local)
+  - url: https://aws.host/api/v1
+    description: Slots Office API Server (AWS staging)
+
+tags:
+  - name: Authentication
+    description: Recite permission to operate with the server
+  - name: Users
+    description: Operations with users
+  - name: Healthcheck
+    description: Server status
+
+paths:
+  /auth/login:
+    post:
+      summary: Receive JWT token for the administrators
+      description: Authorize the administrator with credentials
+      tags:
+        - Authentication
+      requestBody:
+        description: User credentials
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: user email
+                  example: admin@mydigicode.com
+                password:
+                  type: string
+                  description: user password
+                  example: StrongPassw0rd
+                  minLength: 8
+                  maxLength: 20
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Administrator JWT token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: administrator jwt token
+                    example: 5e6ca97acde1900235377059eyJhbG....
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /users:
+    get:
+      summary: Returns a list of the system users.
+      description: Is used to get the information about system users.
+      security:
+        - administratorBearerAuth: []
+      tags:
+        - Users
+      parameters:
+        - name: name
+          in: query
+          required: false
+          description: is used to search the user by name.
+          schema:
+            type: string
+            example: John
+        - name: role
+          in: query
+          required: false
+          description: is used to filter users by roles
+          schema:
+            type: string
+            enum: ['admin', 'partner', 'inspector']
+            example: admin
+      responses:
+        '200':
+          description: An array of the communities admins
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '403':
+          $ref: '#/components/responses/UnauthorizedAccess'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    post:
+      summary: Create system user
+      description: Create a user for the system
+      security:
+        - administratorBearerAuth: []
+      tags:
+        - Users
+      requestBody:
+        description: Required CreateUserDto payload
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/User'
+                - type: object
+                  properties:
+                    password:
+                      type: string
+                      description: user password
+                      example: StrongPassw0rd
+                      minLength: 8
+                      maxLength: 20
+                  required:
+                    - password
+      responses:
+        '201':
+          description: User information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '403':
+          $ref: '#/components/responses/UnauthorizedAccess'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    patch:
+      summary: Update user info
+      description: Update personal user data
+      security:
+        - administratorBearerAuth: []
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: user ID.
+          schema:
+            type: number
+            example: 123
+      requestBody:
+        description: User information
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: user email
+                  example: admin@mydigicode.com
+                name:
+                  type: string
+                  description: user name
+                  example: John Doe
+                  minLength: 3
+                  maxLength: 150
+                password:
+                  type: string
+                  description: user password
+                  example: StrongPassw0rd
+                  minLength: 8
+                  maxLength: 20
+      responses:
+        '200':
+          description: Information was updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  affected:
+                    type: integer
+                    example: 1
+                    description: number of the records that was modified.
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '403':
+          $ref: '#/components/responses/UnauthorizedAccess'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    delete:
+      summary: Delete the user
+      description: Delete user from the system
+      security:
+        - administratorBearerAuth: []
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: user ID.
+          schema:
+            type: number
+            example: 123
+      responses:
+        '200':
+          description: User was deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  affected:
+                    type: integer
+                    example: 1
+                    description: number of the records that was modified.
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '403':
+          $ref: '#/components/responses/UnauthorizedAccess'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /healthcheck/liveness:
+    get:
+      summary: Liveness check.
+      description: Is the pod is running.
+      tags:
+        - Healthcheck
+      responses:
+        '200':
+          description: The pod is running
+        '500':
+          description: The pod is not running
+
+  /healthcheck/readiness:
+    get:
+      summary: Readiness check.
+      description: Is the pod is ready for operations.
+      tags:
+        - Healthcheck
+      responses:
+        '200':
+          description: The pod is ready
+        '503':
+          description: The pod does not connected to external services
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: number
+          description: user ID
+          example: 123
+          readOnly: true
+        email:
+          type: string
+          description: user email
+          example: admin@mydigicode.com
+        name:
+          type: string
+          description: user name
+          example: John Doe
+          minLength: 3
+          maxLength: 150
+        role:
+          type: string
+          enum: ['admin', 'partner', 'inspector']
+          description: user role
+          example: inspector
+        isActive:
+          type: boolean
+          description: is it possible for user to login
+          example: true
+      required:
+        - email
+        - name
+        - role
+        - isActive
+
+  responses:
+    UnauthorizedError:
+      description: Access credentials is missing or invalid
+    UnauthorizedAccess:
+      description: Access forbidden
+    UnprocessableEntity:
+      description: Incorrect data transfer object
+    ServerError:
+      description: Unexpected server error
+
+  securitySchemes:
+    administratorBearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

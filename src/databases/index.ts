@@ -1,10 +1,11 @@
 import { createConnection } from 'typeorm';
-import { Courses } from './postgres/entities/courses.entity';
 
 import { postgresConfig } from '../config';
+import { User } from './postgres/entities/user.entity';
 
 createConnection({
+  name: 'default',
   type: 'postgres',
   ...postgresConfig,
-  entities: [Courses]
+  entities: [User]
 });

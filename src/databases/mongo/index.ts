@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 import logger from '../../logger';
 
-import { mongoDbInfo, environment } from '../../config';
+import { mongoConfig, environment } from '../../config';
 
-const mongoConnectionPath = `mongodb://${mongoDbInfo.user}:${mongoDbInfo.password}@${mongoDbInfo.host}:${mongoDbInfo.port}/${mongoDbInfo.database}`;
+const mongoConnectionPath = `mongodb://${mongoConfig.user}:${mongoConfig.password}@${mongoConfig.host}:${mongoConfig.port}/${mongoConfig.database}`;
 
 const connectionOptions =
   environment === 'development'

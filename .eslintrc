@@ -20,6 +20,11 @@
   "rules": {
     // 2 - error, 1 - warn, 0 - off
     "no-console": 1,
-    "prettier/prettier": 2
+    "prettier/prettier": 2,
+    "jest/no-disabled-tests": "warn",
+    "jest/no-focused-tests": "error",
+    "jest/no-identical-title": "error",
+    "jest/prefer-to-have-length": "warn",
+    "jest/valid-expect": "error"
   }
 }
